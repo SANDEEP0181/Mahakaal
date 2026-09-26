@@ -34,3 +34,9 @@ Core Android client, server-authoritative mining ledger, authentication, Postgre
 - Explicit withdrawal state-transition rules added.
 - Admin approval/rejection now checks the current state transactionally.
 - Withdrawal state-machine tests added to CI test suite.
+
+## Phase 17 — Android safety and monitoring UI
+- Added user withdrawal history to the Android dashboard.
+- Added admin reconciliation visibility.
+- Added emergency payout pause/resume controls to the Android admin panel.
+- Added API client support for reconciliation and payout pause operations.
