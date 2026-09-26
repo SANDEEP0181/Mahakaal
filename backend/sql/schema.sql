@@ -40,3 +40,5 @@ INSERT INTO app_config(key,value) VALUES('MIN_WITHDRAWAL','10') ON CONFLICT(key)
 CREATE UNIQUE INDEX IF NOT EXISTS reward_ledger_withdrawal_debit_unique
 ON reward_ledger(user_id, reason)
 WHERE reason LIKE 'withdrawal_debit:%';
+
+INSERT INTO app_config(key,value) VALUES('PAYOUT_PAUSED','false') ON CONFLICT(key) DO NOTHING;
