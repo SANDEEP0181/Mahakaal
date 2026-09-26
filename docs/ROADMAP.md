@@ -19,3 +19,8 @@ Core Android client, server-authoritative mining ledger, authentication, Postgre
 - Authenticated blockchain configuration endpoint.
 - Admin wallet-address validation endpoint with audit logging.
 - Real token broadcast remains disabled until the KAAL chain and contract are finalized.
+
+## Phase 12 — production hardening
+- Android release version bumped to 0.3.0.
+- Cleartext HTTP disabled in Android production manifest.
+- Production deployment guidance updated for HTTPS and secret management.
