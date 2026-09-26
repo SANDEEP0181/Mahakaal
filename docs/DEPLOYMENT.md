@@ -29,3 +29,11 @@ For a physical device or production deployment, use an HTTPS API URL and update 
 - Rate-limit review
 - Admin account protection
 - Blockchain payout integration only after security review
+
+
+## Phase 12 production hardening
+- Android version: 0.3.0 / versionCode 3.
+- Cleartext HTTP is disabled in the Android manifest. Production API must use HTTPS.
+- Blockchain worker remains disabled until a reviewed provider, network, and contract are configured.
+- Do not commit signing keys, RPC credentials, or blockchain private keys.
+- Configure production secrets through the deployment platform's secret manager.
