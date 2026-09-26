@@ -31,6 +31,7 @@ fun AdminScreen() {
     var message by remember { mutableStateOf("Checking admin access…") }
     var users by remember { mutableStateOf(listOf<String>()) }
     var withdrawals by remember { mutableStateOf(listOf<String>()) }
+    var blockchainTx by remember { mutableStateOf(listOf<String>()) }
     var rate by remember { mutableStateOf("1") }
     var maxHours by remember { mutableStateOf("24") }
     var busy by remember { mutableStateOf(false) }
@@ -52,6 +53,11 @@ fun AdminScreen() {
                 withdrawals = (0 until w.length()).map { i ->
                     val x = w.getJSONObject(i)
                     x.optString("id") + " • " + x.optString("amount") + " KAAL • " + x.optString("status")
+                }
+                val bt = JSONObject(ApiClient.adminBlockchainTransactions()).optJSONArray("items") ?: JSONArray()
+                blockchainTx = (0 until bt.length()).map { i ->
+                    val x = bt.getJSONObject(i)
+                    x.optString("id") + " • " + x.optString("amount") + " KAAL • " + x.optString("status") + " • " + x.optString("tx_hash")
                 }
                 val c = JSONObject(ApiClient.adminConfig()).optJSONArray("items") ?: JSONArray()
                 for (i in 0 until c.length()) {
@@ -93,6 +99,8 @@ fun AdminScreen() {
                     items(users) { Text(it,Modifier.padding(vertical=5.dp)) }
                     item { Spacer(Modifier.height(8.dp)); Text("Withdrawals",style=MaterialTheme.typography.titleLarge) }
                     items(withdrawals) { Text(it,Modifier.padding(vertical=5.dp)) }
+                    item { Spacer(Modifier.height(8.dp)); Text("Blockchain Transactions",style=MaterialTheme.typography.titleLarge) }
+                    items(blockchainTx) { Text(it,Modifier.padding(vertical=5.dp)) }
                 }
             }
         }
