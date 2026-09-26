@@ -15,3 +15,18 @@ Android App -> Mahakaal API -> PostgreSQL + Redis -> Mining Engine -> Reward Led
 Foundation, API health check, database schema, Redis, Android dashboard starter, and security-oriented server-authoritative design.
 
 > Mining rewards are calculated and recorded by the server. The Android client is not a source of truth for balances.
+
+
+## Phase 4
+Phase 4 adds:
+- Admin APIs with role checks and audit logs
+- User freeze/unfreeze
+- Database-backed KAAL rate and session configuration
+- Wallet storage
+- Referral codes and referral tracking
+- Reward and withdrawal history
+- Withdrawal request/review workflow
+- Redis request throttling
+- API and deployment documentation
+
+Blockchain payouts are not enabled yet; KAAL remains an internal server ledger until a separate blockchain integration is implemented and verified.
