@@ -41,3 +41,6 @@ Supported config keys:
 
 ## Important
 KAAL rewards are currently an internal server ledger. Admin approval does not send blockchain funds. Real token deployment and blockchain payout require a separate audited blockchain integration.
+
+## Blockchain transaction ledger
+The database contains a `blockchain_transactions` table for future payout tracking: queued, submitted, confirmed, or failed. Phase 6 does not broadcast a blockchain transaction.
