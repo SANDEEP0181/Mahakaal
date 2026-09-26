@@ -1,0 +1,3 @@
+import crypto from "node:crypto";
+export function hashPassword(p:string){const salt=crypto.randomBytes(16).toString("hex");return salt+":"+crypto.scryptSync(p,salt,64).toString("hex");}
+export function verifyPassword(p:string,s:string){const [salt,expected]=s.split(":");if(!salt||!expected)return false;const actual=crypto.scryptSync(p,salt,64).toString("hex");return actual.length===expected.length&&crypto.timingSafeEqual(Buffer.from(actual),Buffer.from(expected));}
