@@ -59,6 +59,10 @@ object ApiClient {
     suspend fun adminApproveWithdrawal(id: String) = call("/api/v1/admin/withdrawals/" + id + "/approve", "POST", "{}")
     suspend fun adminRejectWithdrawal(id: String) = call("/api/v1/admin/withdrawals/" + id + "/reject", "POST", "{}")
 
+    suspend fun blockchainConfig() = call("/api/v1/blockchain/config")
+    suspend fun adminBlockchainTransactions() = call("/api/v1/admin/blockchain-transactions")
+    suspend fun adminConfirmBlockchainTransaction(id: String) = call("/api/v1/admin/blockchain-transactions/" + id + "/confirm", "POST", "{}")
+
     private fun esc(value: String) =
         value.replace("\\", "\\\\").replace("\"", "\\\"")
 }
