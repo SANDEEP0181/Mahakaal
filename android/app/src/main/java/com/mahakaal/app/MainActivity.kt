@@ -84,8 +84,7 @@ fun MahakaalApp(context: Context) {
             network = j.optString("network", network)
         }
         val wh = JSONObject(ApiClient.withdrawals()).optJSONArray("items") ?: JSONArray()
-        withdrawalHistory = (0 until wh.length()).joinToString("
-") { i ->
+        withdrawalHistory = (0 until wh.length()).joinToString("\n") { i ->
             val x = wh.getJSONObject(i)
             "${x.optString("status").uppercase()} • ${x.optString("amount")} KAAL • ${x.optString("created_at")}"
         }.ifBlank { "No withdrawal requests yet." }
