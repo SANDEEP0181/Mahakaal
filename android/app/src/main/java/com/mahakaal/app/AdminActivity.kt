@@ -66,9 +66,10 @@ fun AdminScreen() {
                     val x=c.getJSONObject(i)
                     if(x.optString("key")=="KAAL_RATE_PER_HOUR") rate=x.optString("value")
                     if(x.optString("key")=="MAX_SESSION_HOURS") maxHours=x.optString("value")
+                    if(x.optString("key")=="PAYOUT_PAUSED") payoutPaused=x.optString("value")=="true"
                 }
                 val rec=JSONObject(ApiClient.adminReconciliation())
-                reconciliation="Ledger: \${rec.optString("ledgerBalance","0")} KAAL • Provider: \${rec.optString("blockchainProvider","disabled")} • Payouts paused: \${rec.optBoolean("payoutPaused")}"
+                reconciliation="Ledger: "+rec.optString("ledgerBalance","0")+" KAAL • Provider: "+rec.optString("blockchainProvider","disabled")+" • Payouts paused: "+rec.optBoolean("payoutPaused")
                 message = "Admin dashboard ready"
             } catch (e: Exception) {
                 message = "Admin request failed"
