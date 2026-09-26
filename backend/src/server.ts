@@ -180,15 +180,25 @@ app.post("/api/v1/withdrawals", { preHandler: auth }, async (req: any, reply: an
   const payoutPaused = (await pool.query("SELECT value FROM app_config WHERE key='PAYOUT_PAUSED'")).rows[0]?.value === "true";
   if (payoutPaused) return reply.code(503).send({ error: "Payouts are temporarily paused" });
   if (!Number.isFinite(amount) || amount <= 0 || !address) return reply.code(400).send({ error: "Positive amount and wallet address are required" });
+  const maxWithdrawal = await configNumber("MAX_WITHDRAWAL", 1000);
+  const dailyWithdrawalLimit = await configNumber("DAILY_WITHDRAWAL_LIMIT", 5000);
   if (amount < minWithdrawal) return reply.code(400).send({ error: `Minimum withdrawal is ${minWithdrawal} KAAL` });
+  if (amount > maxWithdrawal) return reply.code(400).send({ error: `Maximum withdrawal is ${maxWithdrawal} KAAL` });
   const c = await pool.connect();
   try {
     await c.query("BEGIN");
+    await c.query("SELECT pg_advisory_xact_lock(hashtext($1))", [req.user.id]);
+    if (idempotencyKey) {
+      const existing = await c.query("SELECT id,amount,address,network,status,created_at FROM withdrawals WHERE user_id=$1 AND idempotency_key=$2", [req.user.id,idempotencyKey]);
+      if (existing.rowCount) { await c.query("COMMIT"); return existing.rows[0]; }
+    }
     const bal = await c.query("SELECT COALESCE(SUM(amount),0) balance FROM reward_ledger WHERE user_id=$1 AND asset='KAAL'", [req.user.id]);
     const reserved = await c.query("SELECT COALESCE(SUM(amount),0) amount FROM withdrawals WHERE user_id=$1 AND status IN ('pending','approved')", [req.user.id]);
+    const daily = await c.query("SELECT COALESCE(SUM(amount),0) amount FROM withdrawals WHERE user_id=$1 AND created_at >= now() - interval '24 hours' AND status NOT IN ('rejected','failed')", [req.user.id]);
+    if (Number(daily.rows[0].amount) + amount > dailyWithdrawalLimit) { await c.query("ROLLBACK"); return reply.code(400).send({ error: `24-hour withdrawal limit is ${dailyWithdrawalLimit} KAAL` }); }
     const available = Number(bal.rows[0].balance) - Number(reserved.rows[0].amount);
     if (amount > available) { await c.query("ROLLBACK"); return reply.code(400).send({ error: "Insufficient available KAAL balance" }); }
-    const r = await c.query("INSERT INTO withdrawals(user_id,amount,address,status) VALUES($1,$2,$3,'pending') RETURNING id,amount,address,status,created_at", [req.user.id, amount.toFixed(12), address]);
+    const r = await c.query("INSERT INTO withdrawals(user_id,amount,address,network,status,idempotency_key) VALUES($1,$2,$3,$4,'pending',$5) RETURNING id,amount,address,network,status,created_at", [req.user.id, amount.toFixed(12), address, network, idempotencyKey]);
     await c.query("COMMIT");
     return r.rows[0];
   } catch (e) { await c.query("ROLLBACK"); throw e; } finally { c.release(); }
