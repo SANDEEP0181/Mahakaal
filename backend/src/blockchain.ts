@@ -24,15 +24,15 @@ export interface BlockchainProvider {
  * No private key or RPC secret is embedded in source.
  */
 export class DisabledBlockchainProvider implements BlockchainProvider {
-  async validateAddress(address: string): Promise<boolean> {
+  async validateAddress(address: string, _network: BlockchainNetwork): Promise<boolean> {
     return /^0x[a-fA-F0-9]{40}$/.test(address.trim());
   }
 
-  async broadcast(): Promise<BroadcastResult> {
+  async broadcast(_request: WithdrawalRequest): Promise<BroadcastResult> {
     throw new Error("Blockchain payout provider is not enabled");
   }
 
-  async getTransactionStatus(): Promise<"submitted" | "confirmed" | "failed"> {
+  async getTransactionStatus(_txHash: string, _network: BlockchainNetwork): Promise<"submitted" | "confirmed" | "failed"> {
     throw new Error("Blockchain payout provider is not enabled");
   }
 }
