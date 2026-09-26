@@ -177,6 +177,8 @@ app.post("/api/v1/withdrawals", { preHandler: auth }, async (req: any, reply: an
   const network = String(req.body?.network ?? process.env.KAAL_NETWORK ?? "kaal-testnet").trim();
   const idempotencyKey = String(req.headers["idempotency-key"] ?? req.body?.idempotencyKey ?? "").trim() || null;
   const minWithdrawal = await configNumber("MIN_WITHDRAWAL", 10);
+  const payoutPaused = (await pool.query("SELECT value FROM app_config WHERE key='PAYOUT_PAUSED'")).rows[0]?.value === "true";
+  if (payoutPaused) return reply.code(503).send({ error: "Payouts are temporarily paused" });
   if (!Number.isFinite(amount) || amount <= 0 || !address) return reply.code(400).send({ error: "Positive amount and wallet address are required" });
   if (amount < minWithdrawal) return reply.code(400).send({ error: `Minimum withdrawal is ${minWithdrawal} KAAL` });
   const c = await pool.connect();
