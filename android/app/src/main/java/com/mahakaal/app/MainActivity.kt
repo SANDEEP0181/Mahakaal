@@ -199,13 +199,13 @@ fun Dashboard(
     onTab:(String)->Unit,onWallet:(String)->Unit,onNetwork:(String)->Unit,onReferral:(String)->Unit,onWithdrawal:(String)->Unit,
     onRefresh:()->Unit,onMining:()->Unit,onSaveWallet:()->Unit,onApplyReferral:()->Unit,onWithdraw:()->Unit,onLogout:()->Unit
 ) {
+    val context = androidx.compose.ui.platform.LocalContext.current
     Column(Modifier.fillMaxSize().padding(16.dp).verticalScroll(rememberScrollState()),verticalArrangement=Arrangement.spacedBy(12.dp)) {
         Row(Modifier.fillMaxWidth(),horizontalArrangement=Arrangement.SpaceBetween) {
             Column { Text("MAHAKAAL",style=MaterialTheme.typography.headlineMedium); Text("KAAL Network") }
             Row {
                 if (role == "admin") TextButton(onClick={
-                    val ctx = androidx.compose.ui.platform.LocalContext.current
-                    ctx.startActivity(android.content.Intent(ctx, AdminActivity::class.java))
+                    context.startActivity(android.content.Intent(context, AdminActivity::class.java))
                 }) { Text("Admin") }
                 TextButton(onClick=onLogout){Text("Logout")}
             }
