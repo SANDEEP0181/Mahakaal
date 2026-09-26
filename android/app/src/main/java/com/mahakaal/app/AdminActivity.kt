@@ -110,7 +110,7 @@ fun AdminScreen() {
                 Button(enabled=!busy,onClick={
                     action({ApiClient.adminSetConfig("KAAL_RATE_PER_HOUR",rate);ApiClient.adminSetConfig("MAX_SESSION_HOURS",maxHours)},"Configuration saved")
                 },modifier=Modifier.fillMaxWidth()){Text("Save Mining Config")}
-                OutlinedButton(enabled=!busy,onClick={load},modifier=Modifier.fillMaxWidth()){Text("Refresh Admin Data")}
+                OutlinedButton(enabled=!busy,onClick={ { load() } },modifier=Modifier.fillMaxWidth()){Text("Refresh Admin Data")}
                 Spacer(Modifier.height(10.dp))
                 LazyColumn(Modifier.weight(1f),verticalArrangement=Arrangement.spacedBy(8.dp)) {
                     item { Text("Users",style=MaterialTheme.typography.titleLarge) }
