@@ -1,7 +1,7 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 
-const transitions = {
+const transitions: Record<string, string[]> = {
   pending: ["approved", "rejected"],
   approved: ["completed", "failed"],
   completed: [],
