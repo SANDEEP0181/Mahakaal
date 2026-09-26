@@ -166,14 +166,18 @@ app.post("/api/v1/referral/apply", { preHandler: auth }, async (req: any, reply:
 });
 
 app.get("/api/v1/withdrawals", { preHandler: auth }, async (req: any) => {
-  const r = await pool.query("SELECT id,amount,address,status,created_at FROM withdrawals WHERE user_id=$1 ORDER BY created_at DESC LIMIT 100", [req.user.id]);
+  const r = await pool.query("SELECT id,amount,address,network,status,created_at FROM withdrawals WHERE user_id=$1 ORDER BY created_at DESC LIMIT 100", [req.user.id]);
   return { items: r.rows };
 });
 
 app.post("/api/v1/withdrawals", { preHandler: auth }, async (req: any, reply: any) => {
   const amount = Number(req.body?.amount);
   const address = String(req.body?.address ?? "").trim();
+  const network = String(req.body?.network ?? process.env.KAAL_NETWORK ?? "kaal-testnet").trim();
+  const idempotencyKey = String(req.headers["idempotency-key"] ?? req.body?.idempotencyKey ?? "").trim() || null;
+  const minWithdrawal = await configNumber("MIN_WITHDRAWAL", 10);
   if (!Number.isFinite(amount) || amount <= 0 || !address) return reply.code(400).send({ error: "Positive amount and wallet address are required" });
+  if (amount < minWithdrawal) return reply.code(400).send({ error: `Minimum withdrawal is ${minWithdrawal} KAAL` });
   const c = await pool.connect();
   try {
     await c.query("BEGIN");
@@ -215,7 +219,7 @@ app.get("/api/v1/admin/config", { preHandler: admin }, async () => {
 app.post("/api/v1/admin/config", { preHandler: admin }, async (req: any, reply: any) => {
   const key = String(req.body?.key ?? "");
   const value = String(req.body?.value ?? "");
-  if (!["KAAL_RATE_PER_HOUR","MAX_SESSION_HOURS"].includes(key) || !value || !Number.isFinite(Number(value)) || Number(value) < 0) return reply.code(400).send({ error: "Invalid config" });
+  if (!["KAAL_RATE_PER_HOUR","MAX_SESSION_HOURS","MIN_WITHDRAWAL"].includes(key) || !value || !Number.isFinite(Number(value)) || Number(value) < 0) return reply.code(400).send({ error: "Invalid config" });
   await pool.query("INSERT INTO app_config(key,value,updated_at) VALUES($1,$2,now()) ON CONFLICT(key) DO UPDATE SET value=EXCLUDED.value,updated_at=now()", [key, value]);
   await audit(req.user.id, "update_config", { key, value });
   return { key, value };
@@ -227,10 +231,17 @@ app.get("/api/v1/admin/withdrawals", { preHandler: admin }, async () => {
 });
 
 app.post("/api/v1/admin/withdrawals/:id/approve", { preHandler: admin }, async (req: any, reply: any) => {
-  const r = await pool.query("UPDATE withdrawals SET status='approved' WHERE id=$1 AND status='pending' RETURNING id,user_id,amount,address,status", [req.params.id]);
-  if (!r.rowCount) return reply.code(409).send({ error: "Withdrawal not pending or not found" });
-  await audit(req.user.id, "approve_withdrawal", { withdrawalId: req.params.id });
-  return { ...r.rows[0], note: "Approved internally. Blockchain payout is not implemented yet." };
+  const c = await pool.connect();
+  try {
+    await c.query("BEGIN");
+    const r = await c.query("UPDATE withdrawals SET status='approved' WHERE id=$1 AND status='pending' RETURNING id,user_id,amount,address,network,status", [req.params.id]);
+    if (!r.rowCount) { await c.query("ROLLBACK"); return reply.code(409).send({ error: "Withdrawal not pending or not found" }); }
+    const w = r.rows[0];
+    await c.query("INSERT INTO blockchain_transactions(withdrawal_id,user_id,network,amount,status) VALUES($1,$2,$3,$4,'queued') ON CONFLICT(withdrawal_id) DO NOTHING", [w.id,w.user_id,w.network,w.amount]);
+    await c.query("COMMIT");
+    await audit(req.user.id, "approve_withdrawal", { withdrawalId: req.params.id });
+    return { ...w, blockchainStatus: "queued", note: "Approved and queued. Blockchain broadcast remains disabled." };
+  } catch (e) { await c.query("ROLLBACK"); throw e; } finally { c.release(); }
 });
 
 app.post("/api/v1/admin/withdrawals/:id/reject", { preHandler: admin }, async (req: any, reply: any) => {
