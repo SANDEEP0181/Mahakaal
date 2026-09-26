@@ -14,3 +14,7 @@
 - Admin actions are authenticated, role-checked, and audited.
 - Blockchain broadcast remains disabled until the final provider is deliberately configured.
 - Private keys and signing credentials must remain outside GitHub.
+
+- Admin reconciliation endpoint compares reward-ledger totals with withdrawal and blockchain status aggregates.
+- Emergency payout pause can be enabled or disabled only by an authenticated admin and is audited.
+- Operational indexes support safer/faster withdrawal, ledger, blockchain, and audit monitoring.
