@@ -30,6 +30,7 @@ fun MahakaalApp(context: Context) {
     val scope = rememberCoroutineScope()
     var token by remember { mutableStateOf(prefs.getString("token", null)) }
     var username by remember { mutableStateOf(prefs.getString("username", "") ?: "") }
+    var role by remember { mutableStateOf("user") }
     var password by remember { mutableStateOf("") }
     var referralInput by remember { mutableStateOf("") }
     var balance by remember { mutableStateOf("0") }
@@ -50,6 +51,7 @@ fun MahakaalApp(context: Context) {
     fun saveLogin(newToken: String, newUsername: String) {
         token = newToken
         username = newUsername
+        role = "user"
         prefs.edit().putString("token", newToken).putString("username", newUsername).apply()
         ApiClient.token = newToken
     }
@@ -70,6 +72,7 @@ fun MahakaalApp(context: Context) {
         mining = s.optBoolean("mining")
         startedAt = s.optString("startedAt", "")
         rate = s.optString("ratePerHour", "1")
+        role = JSONObject(ApiClient.me()).optString("role", role)
         val w = ApiClient.wallet()
         if (!w.isNullOrBlank() && w != "null") {
             val j = JSONObject(w)
@@ -199,7 +202,13 @@ fun Dashboard(
     Column(Modifier.fillMaxSize().padding(16.dp).verticalScroll(rememberScrollState()),verticalArrangement=Arrangement.spacedBy(12.dp)) {
         Row(Modifier.fillMaxWidth(),horizontalArrangement=Arrangement.SpaceBetween) {
             Column { Text("MAHAKAAL",style=MaterialTheme.typography.headlineMedium); Text("KAAL Network") }
-            TextButton(onClick=onLogout){Text("Logout")}
+            Row {
+                if (role == "admin") TextButton(onClick={
+                    val ctx = androidx.compose.ui.platform.LocalContext.current
+                    ctx.startActivity(android.content.Intent(ctx, AdminActivity::class.java))
+                }) { Text("Admin") }
+                TextButton(onClick=onLogout){Text("Logout")}
+            }
         }
         Card(Modifier.fillMaxWidth()) {
             Column(Modifier.padding(18.dp),verticalArrangement=Arrangement.spacedBy(6.dp)) {
