@@ -131,8 +131,8 @@ fun MahakaalApp(context: Context) {
                 )
             } else {
                 Dashboard(
-                    tab, balance, available, mining, startedAt, rate, wallet, network, role,
-                    referralCode, referralCount, referralInput, withdrawalAmount, message, busy,
+                    tab, balance, available, mining, startedAt, rate, wallet, network,
+                    referralCode, referralCount, referralInput, withdrawalAmount, message, busy, role,
                     onTab={tab=it}, onWallet={wallet=it}, onNetwork={network=it},
                     onReferral={referralInput=it}, onWithdrawal={withdrawalAmount=it},
                     onRefresh={
