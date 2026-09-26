@@ -29,3 +29,8 @@ Core Android client, server-authoritative mining ledger, authentication, Postgre
 - Android API client now reads blockchain configuration and admin transaction monitoring.
 - Admin app shows blockchain transaction queue/status alongside withdrawals.
 - Production release version remains 0.3.0.
+
+## Phase 15 — production QA hardening
+- Explicit withdrawal state-transition rules added.
+- Admin approval/rejection now checks the current state transactionally.
+- Withdrawal state-machine tests added to CI test suite.
