@@ -42,3 +42,6 @@ ON reward_ledger(user_id, reason)
 WHERE reason LIKE 'withdrawal_debit:%';
 
 INSERT INTO app_config(key,value) VALUES('PAYOUT_PAUSED','false') ON CONFLICT(key) DO NOTHING;
+
+INSERT INTO app_config(key,value) VALUES('MAX_WITHDRAWAL','1000') ON CONFLICT(key) DO NOTHING;
+INSERT INTO app_config(key,value) VALUES('DAILY_WITHDRAWAL_LIMIT','5000') ON CONFLICT(key) DO NOTHING;
