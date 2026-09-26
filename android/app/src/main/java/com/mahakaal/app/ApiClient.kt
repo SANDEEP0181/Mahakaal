@@ -46,6 +46,8 @@ object ApiClient {
     suspend fun applyReferral(code: String) =
         call("/api/v1/referral/apply", "POST", """{"referralCode":"${esc(code)}"}""")
     suspend fun withdrawals() = call("/api/v1/withdrawals")
+    suspend fun adminReconciliation() = call("/api/v1/admin/system/reconciliation")
+    suspend fun adminPayoutPause(paused: Boolean) = call("/api/v1/admin/system/payout-pause", "POST", """{"paused":$paused}""")
     suspend fun withdraw(amount: String, address: String) =
         call("/api/v1/withdrawals", "POST", """{"amount":$amount,"address":"${esc(address)}"}""")
 
