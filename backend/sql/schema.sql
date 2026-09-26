@@ -27,3 +27,10 @@ CREATE TABLE IF NOT EXISTS blockchain_transactions(
  created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
  updated_at TIMESTAMPTZ NOT NULL DEFAULT now()
 );
+
+ALTER TABLE withdrawals ADD COLUMN IF NOT EXISTS network TEXT NOT NULL DEFAULT 'kaal-testnet';
+ALTER TABLE withdrawals ADD COLUMN IF NOT EXISTS admin_note TEXT;
+ALTER TABLE withdrawals ADD COLUMN IF NOT EXISTS processed_at TIMESTAMPTZ;
+ALTER TABLE withdrawals ADD COLUMN IF NOT EXISTS idempotency_key TEXT;
+CREATE UNIQUE INDEX IF NOT EXISTS withdrawal_idempotency_user ON withdrawals(user_id,idempotency_key) WHERE idempotency_key IS NOT NULL;
+INSERT INTO app_config(key,value) VALUES('MIN_WITHDRAWAL','10') ON CONFLICT(key) DO NOTHING;
