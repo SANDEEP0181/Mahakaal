@@ -8,3 +8,7 @@ CREATE TABLE IF NOT EXISTS wallets(id UUID PRIMARY KEY DEFAULT gen_random_uuid()
 CREATE TABLE IF NOT EXISTS referrals(id UUID PRIMARY KEY DEFAULT gen_random_uuid(),referrer_id UUID NOT NULL REFERENCES users(id),referred_id UUID NOT NULL REFERENCES users(id),created_at TIMESTAMPTZ NOT NULL DEFAULT now(),UNIQUE(referrer_id,referred_id));
 CREATE TABLE IF NOT EXISTS withdrawals(id UUID PRIMARY KEY DEFAULT gen_random_uuid(),user_id UUID NOT NULL REFERENCES users(id),amount NUMERIC(30,12) NOT NULL,address TEXT NOT NULL,status TEXT NOT NULL DEFAULT 'pending',created_at TIMESTAMPTZ NOT NULL DEFAULT now());
 CREATE TABLE IF NOT EXISTS admin_audit_logs(id UUID PRIMARY KEY DEFAULT gen_random_uuid(),action TEXT NOT NULL,actor_id UUID,metadata JSONB NOT NULL DEFAULT '{}',created_at TIMESTAMPTZ NOT NULL DEFAULT now());
+
+ALTER TABLE users ADD COLUMN IF NOT EXISTS role TEXT NOT NULL DEFAULT 'user' CHECK(role IN ('user','admin'));
+CREATE TABLE IF NOT EXISTS app_config(key TEXT PRIMARY KEY,value TEXT NOT NULL,updated_at TIMESTAMPTZ NOT NULL DEFAULT now());
+INSERT INTO app_config(key,value) VALUES('KAAL_RATE_PER_HOUR','1'),('MAX_SESSION_HOURS','24') ON CONFLICT(key) DO NOTHING;
