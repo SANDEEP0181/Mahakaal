@@ -30,3 +30,6 @@ Phase 4 adds:
 - API and deployment documentation
 
 Blockchain payouts are not enabled yet; KAAL remains an internal server ledger until a separate blockchain integration is implemented and verified.
+
+## Phase 6
+Phase 6 adds the Android admin entry point, admin API client methods, stronger development build configuration, and a blockchain transaction ledger foundation. The blockchain ledger stores withdrawal transaction state but does not broadcast transactions yet.
