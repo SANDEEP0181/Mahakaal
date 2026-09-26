@@ -1,0 +1,38 @@
+services:
+  - type: web
+    name: mahakaal-api
+    runtime: docker
+    plan: free
+    dockerfilePath: ./backend/Dockerfile
+    dockerContext: ./backend
+    healthCheckPath: /health
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: PORT
+        value: "10000"
+      - key: JWT_SECRET
+        generateValue: true
+      - key: DATABASE_URL
+        fromDatabase:
+          name: mahakaal-db
+          property: connectionString
+      - key: REDIS_URL
+        fromService:
+          name: mahakaal-redis
+          type: keyvalue
+          property: connectionString
+      - key: BLOCKCHAIN_PROVIDER
+        value: disabled
+      - key: KAAL_NETWORK
+        value: kaal-testnet
+
+  - type: keyvalue
+    name: mahakaal-redis
+    plan: free
+    ipAllowList: []
+
+databases:
+  - name: mahakaal-db
+    plan: free
+    databaseName: mahakaal
