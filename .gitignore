@@ -1,0 +1,19 @@
+# Android / Gradle
+.gradle/
+build/
+**/build/
+local.properties
+*.iml
+
+# Node
+node_modules/
+dist/
+
+# Environment
+.env
+.env.*
+!.env.example
+
+# IDE
+.idea/
+.vscode/
