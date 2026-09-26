@@ -232,7 +232,7 @@ app.get("/api/v1/admin/config", { preHandler: admin }, async () => {
 app.post("/api/v1/admin/config", { preHandler: admin }, async (req: any, reply: any) => {
   const key = String(req.body?.key ?? "");
   const value = String(req.body?.value ?? "");
-  if (!["KAAL_RATE_PER_HOUR","MAX_SESSION_HOURS","MIN_WITHDRAWAL"].includes(key) || !value || !Number.isFinite(Number(value)) || Number(value) < 0) return reply.code(400).send({ error: "Invalid config" });
+  if (!["KAAL_RATE_PER_HOUR","MAX_SESSION_HOURS","MIN_WITHDRAWAL","MAX_WITHDRAWAL","DAILY_WITHDRAWAL_LIMIT"].includes(key) || !value || !Number.isFinite(Number(value)) || Number(value) < 0) return reply.code(400).send({ error: "Invalid config" });
   await pool.query("INSERT INTO app_config(key,value,updated_at) VALUES($1,$2,now()) ON CONFLICT(key) DO UPDATE SET value=EXCLUDED.value,updated_at=now()", [key, value]);
   await audit(req.user.id, "update_config", { key, value });
   return { key, value };
