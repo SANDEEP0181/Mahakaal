@@ -49,6 +49,16 @@ object ApiClient {
     suspend fun withdraw(amount: String, address: String) =
         call("/api/v1/withdrawals", "POST", """{"amount":$amount,"address":"${esc(address)}"}""")
 
+    suspend fun adminUsers() = call("/api/v1/admin/users")
+    suspend fun adminConfig() = call("/api/v1/admin/config")
+    suspend fun adminWithdrawals() = call("/api/v1/admin/withdrawals")
+    suspend fun adminAudit() = call("/api/v1/admin/audit")
+    suspend fun adminSetConfig(key: String, value: String) = call("/api/v1/admin/config", "POST", """{"key":"${esc(key)}","value":"${esc(value)}"}""")
+    suspend fun adminFreeze(id: String) = call("/api/v1/admin/users/" + id + "/freeze", "POST", "{}")
+    suspend fun adminUnfreeze(id: String) = call("/api/v1/admin/users/" + id + "/unfreeze", "POST", "{}")
+    suspend fun adminApproveWithdrawal(id: String) = call("/api/v1/admin/withdrawals/" + id + "/approve", "POST", "{}")
+    suspend fun adminRejectWithdrawal(id: String) = call("/api/v1/admin/withdrawals/" + id + "/reject", "POST", "{}")
+
     private fun esc(value: String) =
-        value.replace("\\", "\\\\").replace(""", "\"")
+        value.replace("\\", "\\\\").replace("\"", "\\\"")
 }
