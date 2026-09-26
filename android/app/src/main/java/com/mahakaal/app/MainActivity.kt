@@ -131,7 +131,7 @@ fun MahakaalApp(context: Context) {
                 )
             } else {
                 Dashboard(
-                    tab, balance, available, mining, startedAt, rate, wallet, network,
+                    tab, balance, available, mining, startedAt, rate, wallet, network, role,
                     referralCode, referralCount, referralInput, withdrawalAmount, message, busy,
                     onTab={tab=it}, onWallet={wallet=it}, onNetwork={network=it},
                     onReferral={referralInput=it}, onWithdrawal={withdrawalAmount=it},
@@ -195,7 +195,7 @@ fun AuthScreen(
 @Composable
 fun Dashboard(
     tab:String,balance:String,available:String,mining:Boolean,startedAt:String,rate:String,wallet:String,network:String,
-    referralCode:String,referralCount:String,referralInput:String,withdrawalAmount:String,message:String,busy:Boolean,
+    referralCode:String,referralCount:String,referralInput:String,withdrawalAmount:String,message:String,busy:Boolean,role:String,
     onTab:(String)->Unit,onWallet:(String)->Unit,onNetwork:(String)->Unit,onReferral:(String)->Unit,onWithdrawal:(String)->Unit,
     onRefresh:()->Unit,onMining:()->Unit,onSaveWallet:()->Unit,onApplyReferral:()->Unit,onWithdraw:()->Unit,onLogout:()->Unit
 ) {
