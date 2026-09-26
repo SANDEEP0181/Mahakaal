@@ -40,3 +40,12 @@ Core Android client, server-authoritative mining ledger, authentication, Postgre
 - Added admin reconciliation visibility.
 - Added emergency payout pause/resume controls to the Android admin panel.
 - Added API client support for reconciliation and payout pause operations.
+
+
+## Phase 18 — Android Security & Release Configuration
+- Android Keystore-backed encrypted auth token storage.
+- BuildConfig-based API endpoint configuration.
+- Cleartext HTTP permitted only for debug builds; release remains HTTPS-only.
+- Admin withdrawal approval/rejection controls added to the Android admin screen.
+- Test-settlement confirmation is clearly separated from live blockchain payout.
+- Live blockchain payout remains disabled until a deliberate, audited provider integration is completed.
