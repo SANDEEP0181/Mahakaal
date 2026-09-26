@@ -296,6 +296,33 @@ app.get("/api/v1/admin/audit", { preHandler: admin }, async () => {
   return { items: r.rows };
 });
 
+
+app.get("/api/v1/admin/system/reconciliation", { preHandler: admin }, async (_req: any) => {
+  const [ledger, withdrawals, blockchain] = await Promise.all([
+    pool.query("SELECT COALESCE(SUM(amount),0) AS ledger_balance FROM reward_ledger WHERE asset='KAAL'"),
+    pool.query("SELECT status,COALESCE(SUM(amount),0) AS amount,COUNT(*)::int AS count FROM withdrawals GROUP BY status ORDER BY status"),
+    pool.query("SELECT status,COALESCE(SUM(amount),0) AS amount,COUNT(*)::int AS count FROM blockchain_transactions GROUP BY status ORDER BY status")
+  ]);
+  return {
+    ledgerBalance: ledger.rows[0]?.ledger_balance ?? "0",
+    withdrawals: withdrawals.rows,
+    blockchainTransactions: blockchain.rows,
+    payoutPaused: (await pool.query("SELECT value FROM app_config WHERE key='PAYOUT_PAUSED'")).rows[0]?.value === "true",
+    blockchainProvider: process.env.BLOCKCHAIN_PROVIDER ?? "disabled"
+  };
+});
+
+app.post("/api/v1/admin/system/payout-pause", { preHandler: admin }, async (req: any, reply: any) => {
+  const paused = req.body?.paused;
+  if (typeof paused !== "boolean") return reply.code(400).send({ error: "paused must be boolean" });
+  await pool.query(
+    "INSERT INTO app_config(key,value,updated_at) VALUES('PAYOUT_PAUSED',$1,now()) ON CONFLICT(key) DO UPDATE SET value=EXCLUDED.value,updated_at=now()",
+    [String(paused)]
+  );
+  await audit(req.user.id, paused ? "payout_pause_enabled" : "payout_pause_disabled", { paused });
+  return { payoutPaused: paused };
+});
+
 const port = Number(process.env.PORT ?? 3000);
 await initRedis();
 await app.listen({ port, host: "0.0.0.0" });
