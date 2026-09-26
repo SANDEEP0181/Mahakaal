@@ -54,6 +54,20 @@ async function throttle(key: string, limit: number, windowSeconds: number) {
   return count <= limit;
 }
 
+
+// Phase 15: explicit withdrawal state-transition guard.
+const allowedWithdrawalTransitions: Record<string, string[]> = {
+  pending: ["approved", "rejected"],
+  approved: ["completed", "failed"],
+  completed: [],
+  rejected: [],
+  failed: ["approved"]
+};
+
+function canTransition(from: string, to: string) {
+  return allowedWithdrawalTransitions[from]?.includes(to) ?? false;
+}
+
 async function audit(actorId: string, action: string, metadata: any = {}) {
   await pool.query("INSERT INTO admin_audit_logs(actor_id,action,metadata) VALUES($1,$2,$3)", [actorId, action, JSON.stringify(metadata)]);
 }
@@ -256,7 +270,9 @@ app.post("/api/v1/admin/withdrawals/:id/approve", { preHandler: admin }, async (
   const c = await pool.connect();
   try {
     await c.query("BEGIN");
-    const r = await c.query("UPDATE withdrawals SET status='approved' WHERE id=$1 AND status='pending' RETURNING id,user_id,amount,address,network,status", [req.params.id]);
+    const current = await c.query("SELECT status FROM withdrawals WHERE id=$1 FOR UPDATE", [req.params.id]);
+    if (!current.rowCount || !canTransition(current.rows[0].status, "approved")) { await c.query("ROLLBACK"); return reply.code(409).send({ error: "Invalid withdrawal state transition" }); }
+    const r = await c.query("UPDATE withdrawals SET status='approved' WHERE id=$1 RETURNING id,user_id,amount,address,network,status", [req.params.id]);
     if (!r.rowCount) { await c.query("ROLLBACK"); return reply.code(409).send({ error: "Withdrawal not pending or not found" }); }
     const w = r.rows[0];
     await c.query("INSERT INTO blockchain_transactions(withdrawal_id,user_id,network,amount,status) VALUES($1,$2,$3,$4,'queued') ON CONFLICT(withdrawal_id) DO NOTHING", [w.id,w.user_id,w.network,w.amount]);
@@ -267,7 +283,9 @@ app.post("/api/v1/admin/withdrawals/:id/approve", { preHandler: admin }, async (
 });
 
 app.post("/api/v1/admin/withdrawals/:id/reject", { preHandler: admin }, async (req: any, reply: any) => {
-  const r = await pool.query("UPDATE withdrawals SET status='rejected' WHERE id=$1 AND status='pending' RETURNING id,user_id,amount,address,status", [req.params.id]);
+  const current = await pool.query("SELECT status FROM withdrawals WHERE id=$1", [req.params.id]);
+  if (!current.rowCount || !canTransition(current.rows[0].status, "rejected")) return reply.code(409).send({ error: "Invalid withdrawal state transition" });
+  const r = await pool.query("UPDATE withdrawals SET status='rejected' WHERE id=$1 RETURNING id,user_id,amount,address,status", [req.params.id]);
   if (!r.rowCount) return reply.code(409).send({ error: "Withdrawal not pending or not found" });
   await audit(req.user.id, "reject_withdrawal", { withdrawalId: req.params.id });
   return r.rows[0];
