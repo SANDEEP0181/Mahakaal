@@ -45,3 +45,11 @@ INSERT INTO app_config(key,value) VALUES('PAYOUT_PAUSED','false') ON CONFLICT(ke
 
 INSERT INTO app_config(key,value) VALUES('MAX_WITHDRAWAL','1000') ON CONFLICT(key) DO NOTHING;
 INSERT INTO app_config(key,value) VALUES('DAILY_WITHDRAWAL_LIMIT','5000') ON CONFLICT(key) DO NOTHING;
+
+
+-- Phase 16: operational indexes for reconciliation and audit queries
+CREATE INDEX IF NOT EXISTS reward_ledger_user_created_idx ON reward_ledger(user_id,created_at DESC);
+CREATE INDEX IF NOT EXISTS withdrawals_user_created_idx ON withdrawals(user_id,created_at DESC);
+CREATE INDEX IF NOT EXISTS withdrawals_status_created_idx ON withdrawals(status,created_at DESC);
+CREATE INDEX IF NOT EXISTS blockchain_transactions_status_updated_idx ON blockchain_transactions(status,updated_at DESC);
+CREATE INDEX IF NOT EXISTS admin_audit_logs_created_idx ON admin_audit_logs(created_at DESC);
