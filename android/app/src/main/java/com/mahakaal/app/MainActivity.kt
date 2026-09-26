@@ -47,6 +47,7 @@ fun MahakaalApp(context: Context) {
     var busy by remember { mutableStateOf(false) }
     var registerMode by remember { mutableStateOf(false) }
     var tab by remember { mutableStateOf("home") }
+    var withdrawalHistory by remember { mutableStateOf("Loading…") }
 
     fun saveLogin(newToken: String, newUsername: String) {
         token = newToken
@@ -79,6 +80,11 @@ fun MahakaalApp(context: Context) {
             wallet = j.optString("address", wallet)
             network = j.optString("network", network)
         }
+        val wh = JSONObject(ApiClient.withdrawals()).optJSONArray("items") ?: JSONArray()
+        withdrawalHistory = (0 until wh.length()).joinToString("\n") { i ->
+            val x = wh.getJSONObject(i)
+            "${x.optString("status").uppercase()} • ${x.optString("amount")} KAAL • ${x.optString("created_at")}"
+        }.ifBlank { "No withdrawal requests yet." }
         val r = JSONObject(ApiClient.referral())
         referralCode = r.optString("referralCode", "")
         referralCount = r.optString("referrals", "0")
@@ -132,7 +138,7 @@ fun MahakaalApp(context: Context) {
             } else {
                 Dashboard(
                     tab, balance, available, mining, startedAt, rate, wallet, network,
-                    referralCode, referralCount, referralInput, withdrawalAmount, message, busy, role,
+                    referralCode, referralCount, referralInput, withdrawalAmount, withdrawalHistory, message, busy, role,
                     onTab={tab=it}, onWallet={wallet=it}, onNetwork={network=it},
                     onReferral={referralInput=it}, onWithdrawal={withdrawalAmount=it},
                     onRefresh={
@@ -195,7 +201,7 @@ fun AuthScreen(
 @Composable
 fun Dashboard(
     tab:String,balance:String,available:String,mining:Boolean,startedAt:String,rate:String,wallet:String,network:String,
-    referralCode:String,referralCount:String,referralInput:String,withdrawalAmount:String,message:String,busy:Boolean,role:String,
+    referralCode:String,referralCount:String,referralInput:String,withdrawalAmount:String,withdrawalHistory:String,message:String,busy:Boolean,role:String,
     onTab:(String)->Unit,onWallet:(String)->Unit,onNetwork:(String)->Unit,onReferral:(String)->Unit,onWithdrawal:(String)->Unit,
     onRefresh:()->Unit,onMining:()->Unit,onSaveWallet:()->Unit,onApplyReferral:()->Unit,onWithdraw:()->Unit,onLogout:()->Unit
 ) {
@@ -246,6 +252,8 @@ fun Dashboard(
                 Text("Withdraw KAAL",style=MaterialTheme.typography.headlineSmall)
                 OutlinedTextField(withdrawalAmount,onWithdrawal,label={Text("Amount")},modifier=Modifier.fillMaxWidth())
                 Button(enabled=!busy && wallet.isNotBlank(),onClick=onWithdraw,modifier=Modifier.fillMaxWidth()){Text("Request Withdrawal")}
+                Text("Withdrawal History", style=MaterialTheme.typography.titleMedium)
+                Text(withdrawalHistory)
                 Text("Withdrawals are reviewed by the server admin. Blockchain payout is not enabled yet.")
             }
             else -> {
