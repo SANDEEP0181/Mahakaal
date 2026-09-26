@@ -7,7 +7,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 
 object ApiClient {
-    var baseUrl = "http://10.0.2.2:3000"
+    var baseUrl: String = BuildConfig.MAHAAKAAL_API_URL.trimEnd('/')
     var token: String? = null
 
     private suspend fun call(path: String, method: String = "GET", body: String? = null): String =
