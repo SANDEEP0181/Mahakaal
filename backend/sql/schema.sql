@@ -34,3 +34,9 @@ ALTER TABLE withdrawals ADD COLUMN IF NOT EXISTS processed_at TIMESTAMPTZ;
 ALTER TABLE withdrawals ADD COLUMN IF NOT EXISTS idempotency_key TEXT;
 CREATE UNIQUE INDEX IF NOT EXISTS withdrawal_idempotency_user ON withdrawals(user_id,idempotency_key) WHERE idempotency_key IS NOT NULL;
 INSERT INTO app_config(key,value) VALUES('MIN_WITHDRAWAL','10') ON CONFLICT(key) DO NOTHING;
+
+
+-- Phase 10: idempotent withdrawal debit protection
+CREATE UNIQUE INDEX IF NOT EXISTS reward_ledger_withdrawal_debit_unique
+ON reward_ledger(user_id, reason)
+WHERE reason LIKE 'withdrawal_debit:%';
