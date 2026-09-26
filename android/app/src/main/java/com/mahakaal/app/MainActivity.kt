@@ -26,7 +26,8 @@ class MainActivity : ComponentActivity() {
 
 @Composable
 fun MahakaalApp(context: Context) {
-    val prefs = remember { context.getSharedPreferences("mahakaal", Context.MODE_PRIVATE) }\n    LaunchedEffect(Unit) { SecurePrefs.migrateLegacy(context) }
+    val prefs = remember { context.getSharedPreferences("mahakaal", Context.MODE_PRIVATE) }
+    LaunchedEffect(Unit) { SecurePrefs.migrateLegacy(context) }
     val scope = rememberCoroutineScope()
     var token by remember { mutableStateOf(SecurePrefs.getToken(context)) }
     var username by remember { mutableStateOf(prefs.getString("username", "") ?: "") }
@@ -53,14 +54,16 @@ fun MahakaalApp(context: Context) {
         token = newToken
         username = newUsername
         role = "user"
-        SecurePrefs.saveToken(context, newToken)\n        prefs.edit().putString("username", newUsername).apply()
+        SecurePrefs.saveToken(context, newToken)
+        prefs.edit().putString("username", newUsername).apply()
         ApiClient.token = newToken
     }
 
     fun logout() {
         token = null
         ApiClient.token = null
-        SecurePrefs.clear(context)\n        prefs.edit().remove("token").apply()
+        SecurePrefs.clear(context)
+        prefs.edit().remove("token").apply()
         tab = "home"
         message = "Logged out"
     }
@@ -81,7 +84,8 @@ fun MahakaalApp(context: Context) {
             network = j.optString("network", network)
         }
         val wh = JSONObject(ApiClient.withdrawals()).optJSONArray("items") ?: JSONArray()
-        withdrawalHistory = (0 until wh.length()).joinToString("\n") { i ->
+        withdrawalHistory = (0 until wh.length()).joinToString("
+") { i ->
             val x = wh.getJSONObject(i)
             "${x.optString("status").uppercase()} • ${x.optString("amount")} KAAL • ${x.optString("created_at")}"
         }.ifBlank { "No withdrawal requests yet." }
