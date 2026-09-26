@@ -24,3 +24,8 @@ Core Android client, server-authoritative mining ledger, authentication, Postgre
 - Android release version bumped to 0.3.0.
 - Cleartext HTTP disabled in Android production manifest.
 - Production deployment guidance updated for HTTPS and secret management.
+
+## Phase 13 — Android/admin integration
+- Android API client now reads blockchain configuration and admin transaction monitoring.
+- Admin app shows blockchain transaction queue/status alongside withdrawals.
+- Production release version remains 0.3.0.
