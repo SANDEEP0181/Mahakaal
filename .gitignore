@@ -17,3 +17,8 @@ dist/
 # IDE
 .idea/
 .vscode/
+
+# Android signing
+*.jks
+*.keystore
+*.p12
