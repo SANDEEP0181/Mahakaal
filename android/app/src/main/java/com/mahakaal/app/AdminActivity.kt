@@ -35,6 +35,8 @@ fun AdminScreen() {
     var rate by remember { mutableStateOf("1") }
     var maxHours by remember { mutableStateOf("24") }
     var busy by remember { mutableStateOf(false) }
+    var payoutPaused by remember { mutableStateOf(false) }
+    var reconciliation by remember { mutableStateOf("Not loaded") }
 
     fun load() {
         scope.launch {
@@ -65,6 +67,8 @@ fun AdminScreen() {
                     if(x.optString("key")=="KAAL_RATE_PER_HOUR") rate=x.optString("value")
                     if(x.optString("key")=="MAX_SESSION_HOURS") maxHours=x.optString("value")
                 }
+                val rec=JSONObject(ApiClient.adminReconciliation())
+                reconciliation="Ledger: \${rec.optString("ledgerBalance","0")} KAAL • Provider: \${rec.optString("blockchainProvider","disabled")} • Payouts paused: \${rec.optBoolean("payoutPaused")}"
                 message = "Admin dashboard ready"
             } catch (e: Exception) {
                 message = "Admin request failed"
@@ -79,6 +83,21 @@ fun AdminScreen() {
             Text("Mahakaal Admin", style=MaterialTheme.typography.headlineMedium)
             Text(message)
             if (allowed) {
+                Card(Modifier.fillMaxWidth()) {
+                    Column(Modifier.padding(12.dp)) {
+                        Text("Emergency payout control", style=MaterialTheme.typography.titleMedium)
+                        Text(if(payoutPaused) "Payouts PAUSED" else "Payouts ACTIVE")
+                        Button(enabled=!busy,onClick={
+                            scope.launch {
+                                busy=true
+                                try { ApiClient.adminPayoutPause(!payoutPaused); payoutPaused=!payoutPaused; message=if(payoutPaused)"Payouts paused" else "Payouts resumed" }
+                                catch(e:Exception){message="Payout control failed"} finally{busy=false}
+                            }
+                        },modifier=Modifier.fillMaxWidth()){Text(if(payoutPaused)"Resume Payouts" else "Pause Payouts")}
+                    }
+                }
+                Text("Reconciliation: "+reconciliation)
+
                 Spacer(Modifier.height(12.dp))
                 OutlinedTextField(rate,{rate=it},label={Text("KAAL/hour")},modifier=Modifier.fillMaxWidth())
                 OutlinedTextField(maxHours,{maxHours=it},label={Text("Max session hours")},modifier=Modifier.fillMaxWidth())
