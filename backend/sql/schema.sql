@@ -14,3 +14,16 @@ ALTER TABLE users ADD COLUMN IF NOT EXISTS referral_code TEXT UNIQUE;
 ALTER TABLE users ADD COLUMN IF NOT EXISTS referred_by UUID REFERENCES users(id);
 CREATE TABLE IF NOT EXISTS app_config(key TEXT PRIMARY KEY,value TEXT NOT NULL,updated_at TIMESTAMPTZ NOT NULL DEFAULT now());
 INSERT INTO app_config(key,value) VALUES('KAAL_RATE_PER_HOUR','1'),('MAX_SESSION_HOURS','24') ON CONFLICT(key) DO NOTHING;
+
+CREATE TABLE IF NOT EXISTS blockchain_transactions(
+ id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+ withdrawal_id UUID UNIQUE REFERENCES withdrawals(id),
+ user_id UUID NOT NULL REFERENCES users(id),
+ network TEXT NOT NULL,
+ asset TEXT NOT NULL DEFAULT 'KAAL',
+ amount NUMERIC(30,12) NOT NULL,
+ tx_hash TEXT UNIQUE,
+ status TEXT NOT NULL DEFAULT 'queued' CHECK(status IN ('queued','submitted','confirmed','failed')),
+ created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
+ updated_at TIMESTAMPTZ NOT NULL DEFAULT now()
+);
