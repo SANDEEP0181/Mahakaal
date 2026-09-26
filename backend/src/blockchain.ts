@@ -20,13 +20,12 @@ export interface BlockchainProvider {
 }
 
 /**
- * Safe Phase 7 placeholder.
- * It deliberately does not send funds. A real provider must be implemented
- * for the selected chain and kept server-side with secrets outside Git.
+ * Phase 9 provider contract.
+ * No private key or RPC secret is embedded in source.
  */
 export class DisabledBlockchainProvider implements BlockchainProvider {
   async validateAddress(address: string): Promise<boolean> {
-    return address.trim().length > 0;
+    return /^0x[a-fA-F0-9]{40}$/.test(address.trim());
   }
 
   async broadcast(): Promise<BroadcastResult> {
@@ -36,4 +35,8 @@ export class DisabledBlockchainProvider implements BlockchainProvider {
   async getTransactionStatus(): Promise<"submitted" | "confirmed" | "failed"> {
     throw new Error("Blockchain payout provider is not enabled");
   }
+}
+
+export function getBlockchainProvider(): BlockchainProvider {
+  return new DisabledBlockchainProvider();
 }
