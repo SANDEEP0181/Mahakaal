@@ -1,1 +1,22 @@
-{"name":"mahakaal-api","private":true,"type":"module","scripts":{"dev":"tsx watch src/server.ts","build":"tsc","start":"node dist/server.js"},"dependencies":{"@fastify/cors":"latest","fastify":"latest","pg":"latest","redis":"latest"},"devDependencies":{"@types/node":"latest","tsx":"latest","typescript":"latest"}}
+{
+  "name": "mahakaal-api",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "tsx watch src/server.ts",
+    "build": "tsc",
+    "start": "node dist/server.js"
+  },
+  "dependencies": {
+    "@fastify/cors": "latest",
+    "fastify": "latest",
+    "pg": "latest",
+    "redis": "latest"
+  },
+  "devDependencies": {
+    "@types/node": "latest",
+    "tsx": "latest",
+    "typescript": "latest",
+    "@types/pg": "latest"
+  }
+}
