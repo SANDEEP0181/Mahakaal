@@ -4,6 +4,7 @@ import cors from "@fastify/cors";
 import { pool, initRedis, redis } from "./db.js";
 import { hashPassword, verifyPassword } from "./password.js";
 import { issueToken, verifyToken } from "./auth.js";
+import { getBlockchainProvider } from "./blockchain.js";
 
 const app = Fastify({ logger: true });
 await app.register(cors, { origin: true });
