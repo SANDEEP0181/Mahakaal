@@ -7,6 +7,9 @@ import { issueToken, verifyToken } from "./auth.js";
 import { getBlockchainProvider } from "./blockchain.js";
 
 const app = Fastify({ logger: true, bodyLimit: 64 * 1024 });
+if (!process.env.JWT_SECRET || process.env.JWT_SECRET === "replace-with-a-long-random-secret") {
+  throw new Error("JWT_SECRET must be configured with a strong production secret");
+}
 await app.register(cors, { origin: false });
 app.addHook("onSend", async (_req, reply) => {
   reply.header("X-Content-Type-Options", "nosniff");
@@ -59,7 +62,7 @@ app.get("/health", async () => ({ ok: true, service: "mahakaal-api", token: "KAA
 
 app.post("/api/v1/auth/register", async (req: any, reply: any) => {
   const b = req.body ?? {};
-  if (!b.username || !b.password || String(b.password).length < 8) return reply.code(400).send({ error: "Username and password (8+ chars) are required" });
+  if (!b.username || !b.password || String(b.username).trim().length < 3 || String(b.username).trim().length > 32 || String(b.password).length < 8 || String(b.password).length > 128) return reply.code(400).send({ error: "Username and password (8+ chars) are required" });
   if (!(await throttle("register:" + req.ip, 5, 3600))) return reply.code(429).send({ error: "Too many registration attempts" });
   const username = String(b.username).trim().toLowerCase();
   const referralCode = b.referralCode ? String(b.referralCode).trim().toUpperCase() : null;
