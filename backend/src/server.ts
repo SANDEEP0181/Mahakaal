@@ -6,8 +6,14 @@ import { hashPassword, verifyPassword } from "./password.js";
 import { issueToken, verifyToken } from "./auth.js";
 import { getBlockchainProvider } from "./blockchain.js";
 
-const app = Fastify({ logger: true });
-await app.register(cors, { origin: true });
+const app = Fastify({ logger: true, bodyLimit: 64 * 1024 });
+await app.register(cors, { origin: false });
+app.addHook("onSend", async (_req, reply) => {
+  reply.header("X-Content-Type-Options", "nosniff");
+  reply.header("X-Frame-Options", "DENY");
+  reply.header("Referrer-Policy", "no-referrer");
+  reply.header("Cache-Control", "no-store");
+});
 
 async function auth(req: any, reply: any) {
   const h = req.headers.authorization ?? "";
